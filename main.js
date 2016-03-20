@@ -138,6 +138,11 @@ function animate() {
 
     doPhysics(player, 1 / 30);
 
+    if (player.y > 600) {
+        player.y = 600;
+        player.physics.speed = mul2D(player.physics.speed, -0.9);
+    }
+
     renderer.render(player);
     // render the container
     renderer.render(stage);
