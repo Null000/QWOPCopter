@@ -23,9 +23,9 @@ rightRotor.anchor.y = 0.5;
 body.x = 0;
 body.y = 0;
 leftRotor.x = -25;
-leftRotor.y = -10;
+leftRotor.y = -20;
 rightRotor.x = 25;
-rightRotor.y = -10;
+rightRotor.y = -20;
 
 
 player.addChild(body);
@@ -45,6 +45,45 @@ player.physics = {
 };
 
 stage.addChild(player);
+
+
+function keyboard(keyCode) {
+    var key = {};
+    key.code = keyCode;
+    key.isDown = false;
+    key.isUp = true;
+    key.press = undefined;
+    key.release = undefined;
+    //The `downHandler`
+    key.downHandler = function (event) {
+        if (event.keyCode === key.code) {
+            if (key.isUp && key.press) key.press();
+            key.isDown = true;
+            key.isUp = false;
+        }
+        event.preventDefault();
+    };
+
+    //The `upHandler`
+    key.upHandler = function (event) {
+        if (event.keyCode === key.code) {
+            if (key.isDown && key.release) key.release();
+            key.isDown = false;
+            key.isUp = true;
+        }
+        event.preventDefault();
+    };
+
+    //Attach event listeners
+    window.addEventListener(
+        "keydown", key.downHandler.bind(key), false
+    );
+    window.addEventListener(
+        "keyup", key.upHandler.bind(key), false
+    );
+    return key;
+}
+
 
 function add2D(a, b) {
     return [a[0] + b[0], a[1] + b[1]];
@@ -66,6 +105,8 @@ function doPhysics(object, time) {
     }
     object.physics.speed = add2D(object.physics.speed, mul2D(acceleration, time));
 
+
+    object.physics.appliedForce = [0, 0];
     //F = m a
     //a = F/m
     //v = t a
@@ -73,6 +114,17 @@ function doPhysics(object, time) {
     object.x += object.physics.speed[0];
     object.y += object.physics.speed[1];
 }
+
+var keyObject = keyboard(65); //a
+
+keyObject.press = function () {
+    //key object pressed
+    player.physics.appliedForce = add2D(player.physics.appliedForce, [0, -150]);
+};
+keyObject.release = function () {
+    //key object released
+};
+
 
 // start animating
 animate();
