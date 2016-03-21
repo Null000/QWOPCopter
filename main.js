@@ -1,5 +1,6 @@
 var gravity = [0, 10]; //m/s^2
 var scale = 1; // pixels/m
+var pi = 3.14159265359;
 
 
 var renderer = PIXI.autoDetectRenderer(800, 600, {backgroundColor: 0x1099bb});
@@ -99,6 +100,10 @@ function div2D(v, s) {
     return [v[0] / s, v[1] / s];
 }
 
+function init2D(rotation, size) {
+    return [Math.sin(rotation) * size, Math.cos(rotation) * size];
+}
+
 function doPhysics(object, time) {
     var acceleration = div2D(object.physics.appliedForce, object.physics.mass);
 
@@ -117,14 +122,24 @@ function doPhysics(object, time) {
     object.y += object.physics.speed[1] * scale;
 }
 
-var keyObject = keyboard(65); //a
-
-keyObject.press = function () {
-    //key object pressed
-    player.physics.appliedForce = add2D(player.physics.appliedForce, [0, -150]);
+//key codes http://help.adobe.com/en_US/AS2LCR/Flash_10.0/help.html?content=00000520.html
+var leftKey = keyboard(65); //a
+var leftUpKey = keyboard(79); //o
+var rightUpKey = keyboard(78); //n
+var rightKey = keyboard(83); //s
+leftUpKey.press = function () {
+    player.rotation += 0.1;
+    player.physics.appliedForce = add2D(player.physics.appliedForce, init2D(-player.rotation, -100));
 };
-keyObject.release = function () {
-    //key object released
+rightUpKey.press = function () {
+    player.rotation -= 0.1;
+    player.physics.appliedForce = add2D(player.physics.appliedForce, init2D(-player.rotation, -100));
+};
+leftKey.press = function() {
+    player.rotation += 0.3;
+};
+rightKey.press = function() {
+    player.rotation -= 0.3;
 };
 
 
@@ -146,6 +161,15 @@ function animate() {
             player.y = 600;
             player.physics.speed = mul2D(player.physics.speed, -0.3);
         }
+        if (player.x > 800) {
+            player.x = 800;
+            player.physics.speed = mul2D(player.physics.speed, -0.3);
+        }
+        if (player.x < 0) {
+            player.x = 0;
+            player.physics.speed = mul2D(player.physics.speed, -0.3);
+        }
+
         renderer.render(player);
 
         // render the container
