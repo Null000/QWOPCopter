@@ -96,12 +96,24 @@ function mul2D(v, s) {
     return [v[0] * s, v[1] * s];
 }
 
+function size2D(v) {
+    return Math.sqrt(v[0] * v[0] + v[1] * v[1]);
+}
+
 function div2D(v, s) {
     return [v[0] / s, v[1] / s];
 }
 
 function init2D(rotation, size) {
     return [Math.sin(rotation) * size, Math.cos(rotation) * size];
+}
+
+function mirrorHorizontal2D(v) {
+    return [v[0], v[1] * -1];
+}
+
+function mirrorVertical2D(v) {
+    return [v[0] * -1, v[1]];
 }
 
 function doPhysics(object, time) {
@@ -135,16 +147,16 @@ rightUpKey.press = function () {
     player.rotation -= 0.1;
     player.physics.appliedForce = add2D(player.physics.appliedForce, init2D(-player.rotation, -100));
 };
-leftKey.press = function() {
+leftKey.press = function () {
     player.rotation += 0.3;
 };
-rightKey.press = function() {
+rightKey.press = function () {
     player.rotation -= 0.3;
 };
 
 
 var fps = 60;
-var frameTime = 1000/fps;
+var frameTime = 1000 / fps;
 var physicsTime = 1 / fps;
 
 // start animating
@@ -152,22 +164,22 @@ animate();
 function animate() {
     setTimeout(function () {
         requestAnimationFrame(animate);
+        doPhysics(player, physicsTime);
+
         leftRotor.rotation += 0.3;
         rightRotor.rotation -= 0.3;
 
-        doPhysics(player, physicsTime);
-
         if (player.y > 600) {
             player.y = 600;
-            player.physics.speed = mul2D(player.physics.speed, -0.3);
+            player.physics.speed = mirrorHorizontal2D(mul2D(player.physics.speed, 0.7));
         }
         if (player.x > 800) {
             player.x = 800;
-            player.physics.speed = mul2D(player.physics.speed, -0.3);
+            player.physics.speed = mirrorVertical2D(mul2D(player.physics.speed, 0.7));
         }
         if (player.x < 0) {
             player.x = 0;
-            player.physics.speed = mul2D(player.physics.speed, -0.3);
+            player.physics.speed = mirrorVertical2D(mul2D(player.physics.speed, 0.7));
         }
 
         renderer.render(player);
