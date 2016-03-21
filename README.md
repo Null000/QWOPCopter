@@ -4,8 +4,10 @@
 
 Overly hard 2D flying game
 
-DEMO (http://null000.github.io/QWOPCopter/)
+DEMO(http://null000.github.io/QWOPCopter/)
+Use QWOP to fly
+(or ',RL for fellow Dvorak users)
+
 
 TODO:
-
-* most of it
+* Add some objectives
