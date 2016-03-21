@@ -129,21 +129,25 @@ keyObject.release = function () {
 // start animating
 animate();
 
+
+var fps = 60;
+var frameTime = 1000/fps;
+var physicsTime = 1 / fps;
 function animate() {
-    requestAnimationFrame(animate);
+    setTimeout(function () {
+        requestAnimationFrame(animate);
+        leftRotor.rotation += 0.3;
+        rightRotor.rotation -= 0.3;
 
-    // just for fun, let's rotate mr rabbit a little
-    leftRotor.rotation += 0.3;
-    rightRotor.rotation -= 0.3;
+        doPhysics(player, physicsTime);
 
-    doPhysics(player, 1 / 30);
+        if (player.y > 600) {
+            player.y = 600;
+            player.physics.speed = mul2D(player.physics.speed, -0.9);
+        }
 
-    if (player.y > 600) {
-        player.y = 600;
-        player.physics.speed = mul2D(player.physics.speed, -0.9);
-    }
-
-    renderer.render(player);
-    // render the container
-    renderer.render(stage);
+        renderer.render(player);
+        // render the container
+        renderer.render(stage);
+    }, frameTime);
 }
