@@ -134,26 +134,39 @@ function doPhysics(object, time) {
     object.y += object.physics.speed[1] * scale;
 }
 
-//key codes http://help.adobe.com/en_US/AS2LCR/Flash_10.0/help.html?content=00000520.html
-var leftKey = keyboard(65); //a
-var leftUpKey = keyboard(79); //o
-var rightUpKey = keyboard(78); //n
-var rightKey = keyboard(83); //s
-leftUpKey.press = function () {
+var leftUpAction = function () {
     player.rotation += 0.1;
     player.physics.appliedForce = add2D(player.physics.appliedForce, init2D(-player.rotation, -100));
 };
-rightUpKey.press = function () {
+var rightUpAction = function () {
     player.rotation -= 0.1;
     player.physics.appliedForce = add2D(player.physics.appliedForce, init2D(-player.rotation, -100));
 };
-leftKey.press = function () {
+var leftAction = function () {
     player.rotation += 0.3;
 };
-rightKey.press = function () {
+var rightAction = function () {
     player.rotation -= 0.3;
 };
 
+//key codes http://help.adobe.com/en_US/AS2LCR/Flash_10.0/help.html?content=00000520.html
+var leftKey = keyboard(81); //q
+var leftUpKey = keyboard(87); //w
+var rightUpKey = keyboard(79); //o
+var rightKey = keyboard(80); //p
+var altLeftKey = keyboard(222); //'
+var altLeftUpKey = keyboard(188); //,
+var altRightUpKey = keyboard(82); //r
+var altRightKey = keyboard(76); //l
+
+leftKey.press = leftAction;
+altLeftKey.press = leftAction;
+leftUpKey.press = leftUpAction;
+altLeftUpKey.press = leftUpAction;
+rightUpKey.press = rightUpAction;
+altRightUpKey.press = rightUpAction;
+rightKey.press = rightAction;
+altRightKey.press = rightAction;
 
 var fps = 60;
 var frameTime = 1000 / fps;
