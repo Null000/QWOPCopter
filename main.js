@@ -1,4 +1,6 @@
-var gravity = [0, 9.14]; //m/s^2
+var gravity = [0, 10]; //m/s^2
+var scale = 1; // pixels/m
+
 
 var renderer = PIXI.autoDetectRenderer(800, 600, {backgroundColor: 0x1099bb});
 document.body.appendChild(renderer.view);
@@ -111,8 +113,8 @@ function doPhysics(object, time) {
     //a = F/m
     //v = t a
 
-    object.x += object.physics.speed[0];
-    object.y += object.physics.speed[1];
+    object.x += object.physics.speed[0] * scale;
+    object.y += object.physics.speed[1] * scale;
 }
 
 var keyObject = keyboard(65); //a
@@ -126,13 +128,12 @@ keyObject.release = function () {
 };
 
 
-// start animating
-animate();
-
-
 var fps = 60;
 var frameTime = 1000/fps;
 var physicsTime = 1 / fps;
+
+// start animating
+animate();
 function animate() {
     setTimeout(function () {
         requestAnimationFrame(animate);
@@ -143,10 +144,10 @@ function animate() {
 
         if (player.y > 600) {
             player.y = 600;
-            player.physics.speed = mul2D(player.physics.speed, -0.9);
+            player.physics.speed = mul2D(player.physics.speed, -0.3);
         }
-
         renderer.render(player);
+
         // render the container
         renderer.render(stage);
     }, frameTime);
