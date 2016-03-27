@@ -1,56 +1,58 @@
-var gravity = [0, 10]; //m/s^2
-var scale = 1; // pixels/m
-var pi = 3.14159265359;
+var GRAVITY = [0, 10]; //m/s^2
+var SCALE = 1; // pixels/m
+var PI = 3.14159265359;
+var SCREEN_WIDTH = 1024;
+var SCREEN_HEIGHT = 760;
 
-
-var renderer = PIXI.autoDetectRenderer(800, 600, {backgroundColor: 0x1099bb});
-document.body.appendChild(renderer.view);
-
-// create the root of the scene graph
-var stage = new PIXI.Container();
-
+function makePlayer() {
 // create a texture from an image path
-var texture = PIXI.Texture.fromImage('qwop.png');
+    var texture = PIXI.Texture.fromImage('qwop.png');
 
 // create a new Sprite using the texture
-var player = new PIXI.Container();
-var body = new PIXI.Sprite(texture);
-var leftRotor = new PIXI.Sprite(texture);
-var rightRotor = new PIXI.Sprite(texture);
-body.anchor.x = 0.5;
-body.anchor.y = 1;
-leftRotor.anchor.x = 0.5;
-leftRotor.anchor.y = 0.5;
-rightRotor.anchor.x = 0.5;
-rightRotor.anchor.y = 0.5;
-body.x = 0;
-body.y = 0;
-leftRotor.x = -25;
-leftRotor.y = -20;
-rightRotor.x = 25;
-rightRotor.y = -20;
+    var player = new PIXI.Container();
+    var body = new PIXI.Sprite(texture);
+    var leftRotor = new PIXI.Sprite(texture);
+    var rightRotor = new PIXI.Sprite(texture);
+    body.anchor.x = 0.5;
+    body.anchor.y = 1;
+    leftRotor.anchor.x = 0.5;
+    leftRotor.anchor.y = 0.5;
+    rightRotor.anchor.x = 0.5;
+    rightRotor.anchor.y = 0.5;
+    body.x = 0;
+    body.y = 0;
+    leftRotor.x = -25;
+    leftRotor.y = -20;
+    rightRotor.x = 25;
+    rightRotor.y = -20;
 
 
-player.addChild(body);
-player.addChild(leftRotor);
+    player.addChild(body);
+    player.addChild(leftRotor);
 
-player.addChild(rightRotor);
+    player.addChild(rightRotor);
 
 // move the sprite to the center of the screen
-player.x = 200;
-player.y = 150;
+    player.x = 200;
+    player.y = 150;
 
-player.physics = {
-    mass: 1,
-    appliedForce: [0, 0],
-    gravity: true,
-    speed: [0, 0]
-};
+    player.physics = {
+        mass: 1,
+        appliedForce: [0, 0],
+        gravity: true,
+        speed: [0, 0]
+    };
 
-stage.addChild(player);
+    player.animate = function (frameTime) {
+        //animate
+        leftRotor.rotation += 0.3;
+        rightRotor.rotation -= 0.3;
+    };
 
+    return player;
+}
 
-function keyboard(keyCode) {
+function makeKeyboardTrigger(keyCode) {
     var key = {};
     key.code = keyCode;
     key.isDown = false;
@@ -120,7 +122,7 @@ function doPhysics(object, time) {
     var acceleration = div2D(object.physics.appliedForce, object.physics.mass);
 
     if (object.physics.gravity) {
-        acceleration = add2D(acceleration, gravity);
+        acceleration = add2D(acceleration, GRAVITY);
     }
     object.physics.speed = add2D(object.physics.speed, mul2D(acceleration, time));
 
@@ -130,64 +132,77 @@ function doPhysics(object, time) {
     //a = F/m
     //v = t a
 
-    object.x += object.physics.speed[0] * scale;
-    object.y += object.physics.speed[1] * scale;
+    object.x += object.physics.speed[0] * SCALE;
+    object.y += object.physics.speed[1] * SCALE;
 }
 
+var ACTION_UP_FORCE = -100;
+var ACTION_UP_ROTATION = 0.1;
+var ACTION_SIDE_ROTATION = 0.3;
+
 var leftUpAction = function () {
-    player.rotation += 0.1;
-    player.physics.appliedForce = add2D(player.physics.appliedForce, init2D(-player.rotation, -100));
+    player.rotation += ACTION_UP_ROTATION;
+    player.physics.appliedForce = add2D(player.physics.appliedForce, init2D(-player.rotation, ACTION_UP_FORCE));
 };
 var rightUpAction = function () {
-    player.rotation -= 0.1;
-    player.physics.appliedForce = add2D(player.physics.appliedForce, init2D(-player.rotation, -100));
+    player.rotation -= ACTION_UP_ROTATION;
+    player.physics.appliedForce = add2D(player.physics.appliedForce, init2D(-player.rotation, ACTION_UP_FORCE));
 };
 var leftAction = function () {
-    player.rotation += 0.3;
+    player.rotation += ACTION_SIDE_ROTATION;
 };
 var rightAction = function () {
-    player.rotation -= 0.3;
+    player.rotation -= ACTION_SIDE_ROTATION;
 };
 
+function addActions() {
 //key codes http://help.adobe.com/en_US/AS2LCR/Flash_10.0/help.html?content=00000520.html
-var leftKey = keyboard(81); //q
-var leftUpKey = keyboard(87); //w
-var rightUpKey = keyboard(79); //o
-var rightKey = keyboard(80); //p
-var altLeftKey = keyboard(222); //'
-var altLeftUpKey = keyboard(188); //,
-var altRightUpKey = keyboard(82); //r
-var altRightKey = keyboard(76); //l
+    var leftKey = makeKeyboardTrigger(81); //q
+    var leftUpKey = makeKeyboardTrigger(87); //w
+    var rightUpKey = makeKeyboardTrigger(79); //o
+    var rightKey = makeKeyboardTrigger(80); //p
+    var altLeftKey = makeKeyboardTrigger(222); //'
+    var altLeftUpKey = makeKeyboardTrigger(188); //,
+    var altRightUpKey = makeKeyboardTrigger(82); //r
+    var altRightKey = makeKeyboardTrigger(76); //l
 
-leftKey.press = leftAction;
-altLeftKey.press = leftAction;
-leftUpKey.press = leftUpAction;
-altLeftUpKey.press = leftUpAction;
-rightUpKey.press = rightUpAction;
-altRightUpKey.press = rightUpAction;
-rightKey.press = rightAction;
-altRightKey.press = rightAction;
+    leftKey.press = leftAction;
+    altLeftKey.press = leftAction;
+    leftUpKey.press = leftUpAction;
+    altLeftUpKey.press = leftUpAction;
+    rightUpKey.press = rightUpAction;
+    altRightUpKey.press = rightUpAction;
+    rightKey.press = rightAction;
+    altRightKey.press = rightAction;
+}
+
+
+var renderer = PIXI.autoDetectRenderer(SCREEN_WIDTH, SCREEN_HEIGHT, {backgroundColor: 0x1099bb});
+document.body.appendChild(renderer.view);
+
+var stage = new PIXI.Container();
+var player = makePlayer();
+stage.addChild(player);
+
+addActions();
 
 var fps = 60;
 var frameTime = 1000 / fps;
 var physicsTime = 1 / fps;
-
-// start animating
-animate();
-function animate() {
+gameLoop();
+function gameLoop() {
     setTimeout(function () {
-        requestAnimationFrame(animate);
+        requestAnimationFrame(gameLoop);
+        //move
         doPhysics(player, physicsTime);
 
-        leftRotor.rotation += 0.3;
-        rightRotor.rotation -= 0.3;
-
-        if (player.y > 600) {
-            player.y = 600;
+        //fix collisions
+        if (player.y > SCREEN_HEIGHT) {
+            player.y = SCREEN_HEIGHT;
             player.physics.speed = mirrorHorizontal2D(mul2D(player.physics.speed, 0.7));
         }
-        if (player.x > 800) {
-            player.x = 800;
+        if (player.x > SCREEN_WIDTH) {
+            player.x = SCREEN_WIDTH;
             player.physics.speed = mirrorVertical2D(mul2D(player.physics.speed, 0.7));
         }
         if (player.x < 0) {
@@ -195,9 +210,11 @@ function animate() {
             player.physics.speed = mirrorVertical2D(mul2D(player.physics.speed, 0.7));
         }
 
-        renderer.render(player);
+        //animate
+        player.animate(frameTime);
 
-        // render the container
+        //render
+        renderer.render(player);
         renderer.render(stage);
     }, frameTime);
 }
