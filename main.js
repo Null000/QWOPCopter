@@ -31,7 +31,7 @@ WebFontConfig = {
 
 //game engine stuff
 
-function makePlayer() {
+function makePlayer(x, y) {
     // create a new Sprite using the texture
     var player = new PIXI.Container();
 
@@ -76,8 +76,8 @@ function makePlayer() {
     player.addChild(rightRotor);
 
     // set position
-    player.x = 200;
-    player.y = 150;
+    player.x = x;
+    player.y = y;
 
     //makes the object be effected by physics
     player.physics = {
@@ -286,7 +286,7 @@ var score = 0;
 var renderer = PIXI.autoDetectRenderer(SCREEN_WIDTH, SCREEN_HEIGHT, {backgroundColor: 0x1099bb});
 document.body.appendChild(renderer.view);
 var stage = new PIXI.Container();
-var player = makePlayer();
+var player = makePlayer(SCREEN_WIDTH / 2, SCREEN_HEIGHT);
 
 stage.addChild(player);
 
