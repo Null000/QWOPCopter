@@ -4,8 +4,19 @@
 
 Overly hard 2D flying game
 
-DEMO (http://null000.github.io/QWOPCopter/)
+## [DEMO](http://null000.github.io/QWOPCopter/)
 
-TODO:
+Use QWOP to fly (or ',RL for fellow Dvorak users)
 
-* most of it
+## DONE:
+
+- rendering stuff using [Pixi.js](http://www.pixijs.com/)
+- simple physics
+- simple collision
+- very very basic objectives
+- is fun to fly
+
+## TODO:
+- display some text on the start
+- detect end of game and offer restart
+- mooooooore objectives
