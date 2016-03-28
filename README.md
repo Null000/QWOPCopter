@@ -20,3 +20,4 @@ Use QWOP to fly (or ',RL for fellow Dvorak users)
 - display some text on the start
 - detect end of game and offer restart
 - mooooooore objectives
+- graphics... anybody willing to give me any to use?
