@@ -284,6 +284,12 @@ var score = 0;
 
 //create world
 var renderer = PIXI.autoDetectRenderer(SCREEN_WIDTH, SCREEN_HEIGHT, {backgroundColor: 0x1099bb});
+renderer.view.style.position = 'absolute';
+renderer.view.style.left = '50%';
+renderer.view.style.top = '50%';
+
+renderer.view.style.transform = 'translate3d( -50%, -50%, 0 )';
+
 document.body.appendChild(renderer.view);
 var stage = new PIXI.Container();
 var player = makePlayer(SCREEN_WIDTH / 2, SCREEN_HEIGHT);
