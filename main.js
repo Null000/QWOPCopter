@@ -3,6 +3,9 @@ var SCALE = 1; // pixels/m
 var PI = 3.14159265359;
 var SCREEN_WIDTH = 1024;
 var SCREEN_HEIGHT = 760;
+var COLLISION_TYPES = {
+    CIRCLE: 'circle' //has radius
+};
 
 //google fonts
 WebFontConfig = {
@@ -12,7 +15,7 @@ WebFontConfig = {
 
     active: function () {
         // do something
-        init();
+        //init();
     }
 
 };
@@ -93,7 +96,39 @@ function makePlayer() {
         renderer.render(player);
     };
 
+    //collision attributes
+    player.collision = {
+        type: COLLISION_TYPES.CIRCLE,
+        radius: body.width / 2
+    };
+
     return player;
+}
+
+function makePoint(x, y) {
+    var point = new PIXI.Text("POI\nNT", {
+        font: "bold 20px Podkova",
+        fill: "#ff0000",
+        align: "center",
+        stroke: "#FFFFFF",
+        strokeThickness: 6
+    });
+    point.anchor.x = point.anchor.y = 0.5;
+    point.x = x;
+    point.y = y;
+
+    point.collision = {
+        type: COLLISION_TYPES.CIRCLE,
+        radius: point.width / 2,
+        onCollision: function (other) {
+            if (other == player) {
+                score++;
+                removeFromStage.push(point);
+            }
+        }
+    };
+
+    return point;
 }
 
 function makeKeyboardTrigger(keyCode) {
@@ -180,6 +215,28 @@ function doPhysics(object, time) {
     object.y += object.physics.speed[1] * SCALE;
 }
 
+function doCollision(first, second) {
+    var didCollide = false;
+
+    //currently we only have circular bounding boxes
+    var xDiff = first.x - second.x;
+    var yDiff = first.y - second.y;
+    var squareDistance = xDiff * xDiff + yDiff * yDiff;
+    var radiusSum = first.collision.radius + second.collision.radius;
+    if (squareDistance <= radiusSum * radiusSum) {
+        didCollide = true;
+    }
+
+    if (didCollide) {
+        if (first.collision.onCollision) {
+            first.collision.onCollision(second);
+        }
+        if (second.collision.onCollision) {
+            second.collision.onCollision(first);
+        }
+    }
+}
+
 var ACTION_UP_FORCE = -100;
 var ACTION_UP_ROTATION = 0.15;
 var ACTION_SIDE_ROTATION = 0.3; //this is radians btw, so 2*PI RAD == 360 DEG
@@ -233,6 +290,11 @@ var player = makePlayer();
 
 stage.addChild(player);
 
+stage.addChild(makePoint(100, 100));
+stage.addChild(makePoint(100, SCREEN_HEIGHT - 100));
+stage.addChild(makePoint(SCREEN_WIDTH - 100, 100));
+stage.addChild(makePoint(SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100));
+
 addActions();
 //create HUD
 var scoreText = new PIXI.Text('Score: 9001 (just kidding)', {
@@ -252,6 +314,7 @@ stage.addChild(scoreText);
 var fps = 60;
 var frameTime = 1000 / fps;
 var physicsTime = 1 / fps;
+var removeFromStage = [];
 
 gameLoop();
 
@@ -260,14 +323,24 @@ function gameLoop() {
         requestAnimationFrame(gameLoop);
         //TODO keyboad/action processing step?
 
+        //move
         _.forEach(stage.children, function (child) {
-            //move
             if (child.physics) {
                 doPhysics(child, physicsTime);
             }
+        });
 
-            //collision resolution
-            //TODO do it properly
+        //collision resolution
+        for (var i = 0; i < stage.children.length; i++) {
+            var child = stage.children[i];
+            if (child.collision) {
+                for (var j = i + 1; j < stage.children.length; j++) {
+                    var other = stage.children[j];
+                    if (other.collision) {
+                        doCollision(child, other);
+                    }
+                }
+            }
 
             //stage walls
             if (child == player) {
@@ -285,7 +358,15 @@ function gameLoop() {
                     child.physics.speed = mirrorVertical2D(mul2D(player.physics.speed, 0.7));
                 }
             }
+        }
 
+        //remove things
+        _.forEach(removeFromStage, function (childToRemove) {
+            stage.removeChild(childToRemove);
+        });
+        removeFromStage = [];
+
+        _.forEach(stage.children, function (child) {
             //animate
             if (child.animate) {
                 player.animate(frameTime);
