@@ -1,0 +1,19 @@
+{
+  "name": "qwopcopter",
+  "version": "0.0.1",
+  "description": "Overy hard flying game",
+  "main": "index.html",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Null000/QWOPCopter.git"
+  },
+  "scripts": {
+    "start": "tsc *.ts"
+  },
+  "author": "Damjan Košir",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/Null000/QWOPCopter/issues"
+  },
+  "homepage": "https://github.com/Null000/QWOPCopter#readme"
+}

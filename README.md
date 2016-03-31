@@ -20,3 +20,10 @@ Use QWOP to fly (or ',RL for fellow Dvorak users)
 - display some text on the start
 - detect end of game and offer restart
 - mooooooore objectives
+- graphics... anybody willing to give me any to use?
+
+
+## DEVELOPMENT
+1. npm install typescript -g
+2. npm start
+3. (optional) npm install typings -g
