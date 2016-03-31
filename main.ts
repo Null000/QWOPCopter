@@ -64,7 +64,7 @@ function makePlayer(x:number, y:number):QwopObject {
     });
 
     var leftRotor = new PIXI.Text("QWOP", {
-        font: "bold 8px Podkova",
+        font: "bold 20px Podkova",
         fill: "#000000",
         align: "center",
         stroke: "#FFFFFF",
