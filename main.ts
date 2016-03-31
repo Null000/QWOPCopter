@@ -1,7 +1,7 @@
 /// <reference path="typings/browser.d.ts" />
 var _:any;
 
-var GRAVITY:number[] = [0, 10]; //m/s^2
+var GRAVITY:number = 30; //m/s^2
 var SCALE:number = 1; // pixels/m
 var PI:number = 3.14159265359;
 var SCREEN_WIDTH:number = 1024;
@@ -63,18 +63,18 @@ function makePlayer(x:number, y:number):QwopObject {
     });
 
     var leftRotor = new PIXI.Text("QWOP", {
-        font: "bold 20px Podkova",
+        font: "bold 8px Podkova",
         fill: "#000000",
         align: "center",
         stroke: "#FFFFFF",
-        strokeThickness: 6
+        strokeThickness: 1
     });
     var rightRotor = new PIXI.Text("QWOP", {
         font: "bold 20px Podkova",
         fill: "#000000",
         align: "center",
         stroke: "#FFFFFF",
-        strokeThickness: 6
+        strokeThickness: 1
     });
 
     body.anchor.x = 0.5;
@@ -222,7 +222,7 @@ function doPhysics(object:QwopObject, time:number) {
     var acceleration = div2D(object.physics.appliedForce, object.physics.mass);
 
     if (object.physics.gravity) {
-        acceleration = add2D(acceleration, GRAVITY);
+        acceleration = add2D(acceleration, [0, GRAVITY]);
     }
     object.physics.speed = add2D(object.physics.speed, mul2D(acceleration, time));
 
@@ -234,6 +234,8 @@ function doPhysics(object:QwopObject, time:number) {
 
     object.x += object.physics.speed[0] * SCALE;
     object.y += object.physics.speed[1] * SCALE;
+
+    object.physics.speed = mul2D(object.physics.speed, 0.97);
 }
 
 function doCollision(first, second) {
@@ -258,50 +260,40 @@ function doCollision(first, second) {
     }
 }
 
-var ACTION_UP_FORCE:number = -100;
-var ACTION_UP_ROTATION:number = 0.15;
-var ACTION_SIDE_ROTATION:number = 0.3; //this is radians btw, so 2*PI RAD == 360 DEG
 
-var leftUpAction = function () {
-    player.rotation += ACTION_UP_ROTATION;
-    player.physics.appliedForce = add2D(player.physics.appliedForce, init2D(-player.rotation, ACTION_UP_FORCE));
-};
-var rightUpAction = function () {
-    player.rotation -= ACTION_UP_ROTATION;
-    player.physics.appliedForce = add2D(player.physics.appliedForce, init2D(-player.rotation, ACTION_UP_FORCE));
-};
-var leftAction = function () {
-    player.rotation += ACTION_SIDE_ROTATION;
-};
-var rightAction = function () {
-    player.rotation -= ACTION_SIDE_ROTATION;
-};
+var MAX_ANGLE = PI/2; //90 degrees
+var ROTATION_DECAY_FACTOR = 0.95;
 
-function addActions() {
-//key codes http://help.adobe.com/en_US/AS2LCR/Flash_10.0/help.html?content=00000520.html
-    var leftKey = makeKeyboardTrigger(81); //q
-    var leftUpKey = makeKeyboardTrigger(87); //w
-    var rightUpKey = makeKeyboardTrigger(79); //o
-    var rightKey = makeKeyboardTrigger(80); //p
-    var altLeftKey = makeKeyboardTrigger(222); //'
-    var altLeftUpKey = makeKeyboardTrigger(188); //,
-    var altRightUpKey = makeKeyboardTrigger(82); //r
-    var altRightKey = makeKeyboardTrigger(76); //l
+var ACTION_ROTATION = MAX_ANGLE / ROTATION_DECAY_FACTOR - MAX_ANGLE;
 
-    leftKey.press = leftAction;
-    altLeftKey.press = leftAction;
-    leftUpKey.press = leftUpAction;
-    altLeftUpKey.press = leftUpAction;
-    rightUpKey.press = rightUpAction;
-    altRightUpKey.press = rightUpAction;
-    rightKey.press = rightAction;
-    altRightKey.press = rightAction;
+function handleInput() {
+    var throttle = 0.7;
+
+    if (keyState.isDown('R1')) {
+        player.rotation -= ACTION_ROTATION;
+    }
+
+    if (keyState.isDown('R2')) {
+        player.rotation += ACTION_ROTATION;
+    }
+
+    if (keyState.isDown('L1')) {
+        throttle = 2.4;
+    } else if(keyState.isDown('L2')) {
+        throttle = 0;
+    }
+
+
+    player.rotation *= ROTATION_DECAY_FACTOR;
+    throttle *= GRAVITY;
+    player.physics.appliedForce = add2D(player.physics.appliedForce, init2D(-player.rotation, -throttle));
 }
 
 
 //TODO get this executed after the fonts are loaded
 //gameplay
 var score = 0;
+var keyState = new KeyState();
 
 //create world
 var renderer = PIXI.autoDetectRenderer(SCREEN_WIDTH, SCREEN_HEIGHT, {backgroundColor: 0x1099bb});
@@ -322,7 +314,6 @@ stage.addChild(makePoint(100, SCREEN_HEIGHT - 100));
 stage.addChild(makePoint(SCREEN_WIDTH - 100, 100));
 stage.addChild(makePoint(SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100));
 
-addActions();
 //create HUD
 var scoreText = new PIXI.Text('Score: 9001 (just kidding)', {
     font: "35px Snippet",
@@ -349,7 +340,8 @@ gameLoop();
 function gameLoop() {
     setTimeout(function () {
         requestAnimationFrame(gameLoop);
-        //TODO keyboad/action processing step?
+
+        handleInput();
 
         //move
         _.forEach(stage.children, function (child) {
