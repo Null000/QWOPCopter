@@ -1,4 +1,5 @@
 /// <reference path="typings/browser.d.ts" />
+/// <reference path="./KeyState.ts" />
 var _:any;
 
 var GRAVITY:number = 30; //m/s^2
