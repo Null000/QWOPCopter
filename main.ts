@@ -1,11 +1,11 @@
 /// <reference path="typings/browser.d.ts" />
 var _:any;
 
-var GRAVITY = [0, 10]; //m/s^2
-var SCALE:Number = 1; // pixels/m
-var PI:Number = 3.14159265359;
-var SCREEN_WIDTH = 1024;
-var SCREEN_HEIGHT = 760;
+var GRAVITY:number[] = [0, 10]; //m/s^2
+var SCALE:number = 1; // pixels/m
+var PI:number = 3.14159265359;
+var SCREEN_WIDTH:number = 1024;
+var SCREEN_HEIGHT:number = 760;
 var COLLISION_TYPES = {
     CIRCLE: 'circle' //has radius
 };
@@ -51,7 +51,8 @@ var WebFontConfig:any = {
 
 function makePlayer(x:number, y:number):QwopObject {
     // create a new Sprite using the texture
-    var player:QwopObject = new PIXI.Container();
+    var player = new PIXI.Container();
+    var qPlayer:QwopObject = player;
 
     var body = new PIXI.Text("COPTER", {
         font: "bold 20px Podkova",
@@ -98,7 +99,7 @@ function makePlayer(x:number, y:number):QwopObject {
     player.y = y;
 
     //makes the object be effected by physics
-    player.physics = {
+    qPlayer.physics = {
         mass: 1,
         appliedForce: [0, 0],
         gravity: true,
@@ -106,7 +107,7 @@ function makePlayer(x:number, y:number):QwopObject {
     };
 
     //gives custom animation/render
-    player.animate = function (frameTime) {
+    qPlayer.animate = function (frameTime) {
         //animate
         leftRotor.rotation += 0.2;
         rightRotor.rotation -= 0.2;
@@ -115,7 +116,7 @@ function makePlayer(x:number, y:number):QwopObject {
     };
 
     //collision attributes
-    player.collision = {
+    qPlayer.collision = {
         type: COLLISION_TYPES.CIRCLE,
         radius: body.width / 2
     };
@@ -124,18 +125,20 @@ function makePlayer(x:number, y:number):QwopObject {
 }
 
 function makePoint(x, y):QwopObject {
-    var point:QwopObject = new PIXI.Text("POI\nNT", {
+    var point = new PIXI.Text("POI\nNT", {
         font: "bold 20px Podkova",
         fill: "#ff0000",
         align: "center",
         stroke: "#FFFFFF",
         strokeThickness: 6
     });
+    var qPoint: QwopObject = point;
+
     point.anchor.x = point.anchor.y = 0.5;
     point.x = x;
     point.y = y;
 
-    point.collision = {
+    qPoint.collision = {
         type: COLLISION_TYPES.CIRCLE,
         radius: point.width / 2,
         onCollision: function (other) {
@@ -321,12 +324,13 @@ stage.addChild(makePoint(SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100));
 
 addActions();
 //create HUD
-var scoreText:QwopHudObject = new PIXI.Text('Score: 9001 (just kidding)', {
+var scoreText = new PIXI.Text('Score: 9001 (just kidding)', {
     font: "35px Snippet",
     fill: "white",
     align: "left"
 });
-scoreText.updateHud = function () {
+var qScoreText: QwopHudObject = scoreText;
+qScoreText.updateHud = function () {
     scoreText.text = "Score: " + score;
 };
 scoreText.x = 20;
