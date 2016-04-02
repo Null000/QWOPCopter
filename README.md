@@ -11,7 +11,7 @@ Use QWOP to fly (or ',RL for fellow Dvorak users)
 ## DONE:
 
 - rendering stuff using [Pixi.js](http://www.pixijs.com/)
-- simple physics
+- simple-ish physics
 - simple collision
 - very very basic objectives
 - is fun to fly

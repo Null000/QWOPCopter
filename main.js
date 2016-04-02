@@ -12,7 +12,7 @@ var COLLISION_TYPES = {
 //google fonts
 var WebFontConfig = {
     google: {
-        families: ['Snippet', 'Podkova:700']
+        families: ['Source Code Pro', 'Podkova:700']
     },
     active: function () {
         // do something
@@ -112,42 +112,29 @@ function makePoint(x, y) {
             if (other == player) {
                 score++;
                 removeFromStage.push(point);
+                _.pull(pointList, point); //remove from array
+                previousPointList.push(point);
+                if (previousPointList.length > 2) {
+                    var newPoint = previousPointList.shift();
+                    pointList.push(newPoint);
+                    addToStage.push(newPoint);
+                }
             }
         }
     };
     return point;
 }
-function makeKeyboardTrigger(keyCode) {
-    var key = {};
-    key.code = keyCode;
-    key.isDown = false;
-    key.isUp = true;
-    key.press = undefined;
-    key.release = undefined;
-    //The `downHandler`
-    key.downHandler = function (event) {
-        if (event.keyCode === key.code) {
-            if (key.isUp && key.press)
-                key.press();
-            key.isDown = true;
-            key.isUp = false;
-        }
-        event.preventDefault();
-    };
-    //The `upHandler`
-    key.upHandler = function (event) {
-        if (event.keyCode === key.code) {
-            if (key.isDown && key.release)
-                key.release();
-            key.isDown = false;
-            key.isUp = true;
-        }
-        event.preventDefault();
-    };
-    //Attach event listeners
-    window.addEventListener("keydown", key.downHandler.bind(key), false);
-    window.addEventListener("keyup", key.upHandler.bind(key), false);
-    return key;
+function makeOverlayText(text) {
+    var overlayText = new PIXI.Text(text, {
+        font: "35px Source Code Pro",
+        fill: "white",
+        align: "center",
+        stroke: "black",
+        strokeThickness: 6
+    });
+    overlayText.x = (SCREEN_WIDTH - overlayText.width) / 2;
+    overlayText.y = (SCREEN_HEIGHT - overlayText.height) / 2;
+    return overlayText;
 }
 function add2D(a, b) {
     return [a[0] + b[0], a[1] + b[1]];
@@ -208,6 +195,31 @@ var ROTATION_DECAY_FACTOR = 0.95;
 var ACTION_ROTATION = MAX_ANGLE / ROTATION_DECAY_FACTOR - MAX_ANGLE;
 function handleInput() {
     var throttle = 0.7;
+    //TODO define proper states. Don't rely on startTimestamp to know if the game started
+    if (overlayText) {
+        //end game overlay will stay up for at least 3 seconds
+        if ((Date.now() > startTimestamp + LEVEL_TIME + 3000) &&
+            (keyState.isDown('L1') ||
+                keyState.isDown('L2') ||
+                keyState.isDown('R1') ||
+                keyState.isDown('R2'))) {
+            //start level
+            removeFromStage.push(overlayText);
+            overlayText = null;
+            score = 0;
+            //reset points
+            _.forEach(previousPointList, function (point) {
+                pointList.push(point);
+                stage.addChild(point);
+            });
+            previousPointList = [];
+            //reset player
+            player.x = SCREEN_WIDTH / 2;
+            player.y = SCREEN_HEIGHT;
+            startTimestamp = Date.now();
+        }
+        return;
+    }
     if (keyState.isDown('R1')) {
         player.rotation -= ACTION_ROTATION;
     }
@@ -227,6 +239,8 @@ function handleInput() {
 //TODO get this executed after the fonts are loaded
 //gameplay
 var score = 0;
+var LEVEL_TIME = 25000; //ms
+var startTimestamp = -1;
 var keyState = new KeyState();
 //create world
 var renderer = PIXI.autoDetectRenderer(SCREEN_WIDTH, SCREEN_HEIGHT, { backgroundColor: 0x1099bb });
@@ -238,79 +252,117 @@ document.body.appendChild(renderer.view);
 var stage = new PIXI.Container();
 var player = makePlayer(SCREEN_WIDTH / 2, SCREEN_HEIGHT);
 stage.addChild(player);
-stage.addChild(makePoint(100, 100));
-stage.addChild(makePoint(100, SCREEN_HEIGHT - 100));
-stage.addChild(makePoint(SCREEN_WIDTH - 100, 100));
-stage.addChild(makePoint(SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100));
+var pointList = [makePoint(100, 100), makePoint(100, SCREEN_HEIGHT - 100), makePoint(SCREEN_WIDTH - 100, 100), makePoint(SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100)];
+var previousPointList = [];
+_.forEach(pointList, function (point) {
+    stage.addChild(point);
+});
 //create HUD
 var scoreText = new PIXI.Text('Score: 9001 (just kidding)', {
-    font: "35px Snippet",
+    font: "35px Source Code Pro",
     fill: "white",
-    align: "left"
+    align: "left",
+    stroke: "black",
+    strokeThickness: 6
 });
 var qScoreText = scoreText;
 qScoreText.updateHud = function () {
-    scoreText.text = "Score: " + score;
+    scoreText.text = "Score\n" + score;
 };
 scoreText.x = 20;
 scoreText.y = 20;
-var hud = [scoreText];
-stage.addChild(scoreText);
+var timeText = new PIXI.Text('Time left\n' + LEVEL_TIME, {
+    font: "35px Source Code Pro",
+    fill: "white",
+    align: "right",
+    stroke: "black",
+    strokeThickness: 6
+});
+var qTimeText = timeText;
+qTimeText.updateHud = function () {
+    if (startTimestamp > 0) {
+        var now = Date.now();
+        timeText.text = "Time left\n" + Math.max(0, LEVEL_TIME - now + startTimestamp);
+    }
+};
+timeText.x = SCREEN_WIDTH - 20 - timeText.width;
+timeText.y = 20;
+var hud = [scoreText, timeText];
+_.forEach(hud, function (hudElement) {
+    stage.addChild(hudElement);
+});
+var overlayText = makeOverlayText("QWOP, QWOP and awaaaaay!");
+stage.addChild(overlayText);
 var fps = 60;
 var frameTime = 1000 / fps;
 var physicsTime = 1 / fps;
 var removeFromStage = [];
+var addToStage = [];
 gameLoop();
 function gameLoop() {
     setTimeout(function () {
         requestAnimationFrame(gameLoop);
         handleInput();
-        //move
-        _.forEach(stage.children, function (child) {
-            child = child;
-            if (child.physics) {
-                doPhysics(child, physicsTime);
+        //level ends detection
+        if (Date.now() > startTimestamp + LEVEL_TIME) {
+            if (!overlayText) {
+                overlayText = makeOverlayText("You managed to QWOP " + score + " point" + (score == 1 ? "" : "s"));
+                stage.addChild(overlayText);
             }
-        });
-        //collision resolution
-        for (var i = 0; i < stage.children.length; i++) {
-            var child = stage.children[i];
-            if (child.collision) {
-                for (var j = i + 1; j < stage.children.length; j++) {
-                    var other = stage.children[j];
-                    if (other.collision) {
-                        doCollision(child, other);
+        }
+        else {
+            //move
+            _.forEach(stage.children, function (child) {
+                child = child;
+                if (child.physics) {
+                    doPhysics(child, physicsTime);
+                }
+            });
+            //collision resolution
+            for (var i = 0; i < stage.children.length; i++) {
+                var child = stage.children[i];
+                if (child.collision) {
+                    for (var j = i + 1; j < stage.children.length; j++) {
+                        var other = stage.children[j];
+                        if (other.collision) {
+                            doCollision(child, other);
+                        }
+                    }
+                }
+                //stage walls
+                if (child == player) {
+                    //fix collisions
+                    if (child.y > SCREEN_HEIGHT) {
+                        child.y = SCREEN_HEIGHT;
+                        child.physics.speed = mirrorHorizontal2D(mul2D(player.physics.speed, 0.7));
+                    }
+                    if (child.x > SCREEN_WIDTH) {
+                        child.x = SCREEN_WIDTH;
+                        child.physics.speed = mirrorVertical2D(mul2D(player.physics.speed, 0.7));
+                    }
+                    if (child.x < 0) {
+                        child.x = 0;
+                        child.physics.speed = mirrorVertical2D(mul2D(player.physics.speed, 0.7));
                     }
                 }
             }
-            //stage walls
-            if (child == player) {
-                //fix collisions
-                if (child.y > SCREEN_HEIGHT) {
-                    child.y = SCREEN_HEIGHT;
-                    child.physics.speed = mirrorHorizontal2D(mul2D(player.physics.speed, 0.7));
+            //remove things
+            _.forEach(removeFromStage, function (childToRemove) {
+                stage.removeChild(childToRemove);
+            });
+            removeFromStage = [];
+            //add things
+            _.forEach(addToStage, function (childToAdd) {
+                stage.addChild(childToAdd);
+            });
+            addToStage = [];
+            _.forEach(stage.children, function (child) {
+                //animate
+                if (child.animate) {
+                    player.animate(frameTime);
                 }
-                if (child.x > SCREEN_WIDTH) {
-                    child.x = SCREEN_WIDTH;
-                    child.physics.speed = mirrorVertical2D(mul2D(player.physics.speed, 0.7));
-                }
-                if (child.x < 0) {
-                    child.x = 0;
-                    child.physics.speed = mirrorVertical2D(mul2D(player.physics.speed, 0.7));
-                }
-            }
+            });
         }
-        //remove things
-        _.forEach(removeFromStage, function (childToRemove) {
-            stage.removeChild(childToRemove);
-        });
-        removeFromStage = [];
-        _.forEach(stage.children, function (child) {
-            //animate
-            if (child.animate) {
-                player.animate(frameTime);
-            }
-        });
         //update HUD
         _.forEach(hud, function (hudElemet) {
             hudElemet.updateHud();
@@ -319,4 +371,3 @@ function gameLoop() {
         renderer.render(stage);
     }, frameTime);
 }
-//# sourceMappingURL=main.js.map
