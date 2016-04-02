@@ -24,3 +24,4 @@ KeyState.prototype.keyMap = {
     'R1': [79, 82],
     'R2': [80, 76] //P or L
 };
+//# sourceMappingURL=KeyState.js.map

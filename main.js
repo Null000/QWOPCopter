@@ -371,3 +371,4 @@ function gameLoop() {
         renderer.render(stage);
     }, frameTime);
 }
+//# sourceMappingURL=main.js.map
