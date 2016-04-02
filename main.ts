@@ -153,6 +153,21 @@ function makePoint(x, y):QwopObject {
     return point;
 }
 
+function makeOverlayText(text:string) {
+    var overlayText = new PIXI.Text(text, {
+        font: "35px Source Code Pro",
+        fill: "white",
+        align: "center",
+        stroke: "black",
+        strokeThickness: 6
+    });
+
+    overlayText.x = (SCREEN_WIDTH - overlayText.width) / 2;
+    overlayText.y = (SCREEN_HEIGHT - overlayText.height) / 2;
+
+    return overlayText;
+}
+
 function add2D(a:number[], b:number[]) {
     return [a[0] + b[0], a[1] + b[1]];
 }
@@ -232,13 +247,20 @@ var ACTION_ROTATION = MAX_ANGLE / ROTATION_DECAY_FACTOR - MAX_ANGLE;
 function handleInput() {
     var throttle = 0.7;
 
-    if (startTimestamp < 0) {
+    //TODO define proper states. Don't rely on startTimestamp to know if the game started
+    if (overlayText) {
         if (keyState.isDown('L1') ||
             keyState.isDown('L2') ||
             keyState.isDown('R1') ||
             keyState.isDown('R2')) {
+
+            //start level
+            removeFromStage.push(overlayText);
+            overlayText = null;
+            score = 0;
             startTimestamp = Date.now();
         }
+        return;
     }
 
     if (keyState.isDown('R1')) {
@@ -292,24 +314,28 @@ stage.addChild(makePoint(SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100));
 var scoreText = new PIXI.Text('Score: 9001 (just kidding)', {
     font: "35px Source Code Pro",
     fill: "white",
-    align: "left"
+    align: "left",
+    stroke: "black",
+    strokeThickness: 6
 });
 var qScoreText:QwopHudObject = scoreText;
 qScoreText.updateHud = function () {
-    scoreText.text = "Score: " + score;
+    scoreText.text = "Score\n" + score;
 };
 scoreText.x = 20;
 scoreText.y = 20;
-var timeText = new PIXI.Text('Time left: ' + LEVEL_TIME, {
+var timeText = new PIXI.Text('Time left\n' + LEVEL_TIME, {
     font: "35px Source Code Pro",
     fill: "white",
-    align: "right"
+    align: "right",
+    stroke: "black",
+    strokeThickness: 6
 });
 var qTimeText:QwopHudObject = timeText;
 qTimeText.updateHud = function () {
     if (startTimestamp > 0) {
         var now:number = Date.now();
-        timeText.text = "Time left: " + Math.max(0, LEVEL_TIME - now + startTimestamp);
+        timeText.text = "Time left\n" + Math.max(0, LEVEL_TIME - now + startTimestamp);
     }
 };
 
@@ -321,9 +347,12 @@ _.forEach(hud, (hudElement)=> {
     stage.addChild(hudElement);
 });
 
-var fps: number = 60;
-var frameTime: number = 1000 / fps;
-var physicsTime: number = 1 / fps;
+var overlayText = makeOverlayText("QWOP, QWOP and awaaaaay!");
+stage.addChild(overlayText);
+
+var fps:number = 60;
+var frameTime:number = 1000 / fps;
+var physicsTime:number = 1 / fps;
 var removeFromStage = [];
 
 gameLoop();
@@ -334,56 +363,65 @@ function gameLoop() {
 
         handleInput();
 
-        //move
-        _.forEach(stage.children, function (child) {
-            child = <QwopObject> child;
-            if (child.physics) {
-                doPhysics(child, physicsTime);
+        //level ends detection
+        if (Date.now() > startTimestamp + LEVEL_TIME) {
+            if (!overlayText) {
+                overlayText = makeOverlayText("You managed to QWOP " + score + " point" + (score == 1 ? "" : "s"));
+                stage.addChild(overlayText);
             }
-        });
+        } else {
+            //move
+            _.forEach(stage.children, function (child) {
+                child = <QwopObject> child;
+                if (child.physics) {
+                    doPhysics(child, physicsTime);
+                }
+            });
 
-        //collision resolution
-        for (var i = 0; i < stage.children.length; i++) {
-            var child = <QwopObject>stage.children[i];
-            if (child.collision) {
-                for (var j = i + 1; j < stage.children.length; j++) {
-                    var other = <QwopObject>stage.children[j];
-                    if (other.collision) {
-                        doCollision(child, other);
+            //collision resolution
+            for (var i = 0; i < stage.children.length; i++) {
+                var child = <QwopObject>stage.children[i];
+                if (child.collision) {
+                    for (var j = i + 1; j < stage.children.length; j++) {
+                        var other = <QwopObject>stage.children[j];
+                        if (other.collision) {
+                            doCollision(child, other);
+                        }
+                    }
+                }
+
+                //stage walls
+                if (child == player) {
+                    //fix collisions
+                    if (child.y > SCREEN_HEIGHT) {
+                        child.y = SCREEN_HEIGHT;
+                        child.physics.speed = mirrorHorizontal2D(mul2D(player.physics.speed, 0.7));
+                    }
+                    if (child.x > SCREEN_WIDTH) {
+                        child.x = SCREEN_WIDTH;
+                        child.physics.speed = mirrorVertical2D(mul2D(player.physics.speed, 0.7));
+                    }
+                    if (child.x < 0) {
+                        child.x = 0;
+                        child.physics.speed = mirrorVertical2D(mul2D(player.physics.speed, 0.7));
                     }
                 }
             }
 
-            //stage walls
-            if (child == player) {
-                //fix collisions
-                if (child.y > SCREEN_HEIGHT) {
-                    child.y = SCREEN_HEIGHT;
-                    child.physics.speed = mirrorHorizontal2D(mul2D(player.physics.speed, 0.7));
+            //remove things
+            _.forEach(removeFromStage, function (childToRemove) {
+                stage.removeChild(childToRemove);
+            });
+            removeFromStage = [];
+
+            _.forEach(stage.children, function (child) {
+                //animate
+                if (child.animate) {
+                    player.animate(frameTime);
                 }
-                if (child.x > SCREEN_WIDTH) {
-                    child.x = SCREEN_WIDTH;
-                    child.physics.speed = mirrorVertical2D(mul2D(player.physics.speed, 0.7));
-                }
-                if (child.x < 0) {
-                    child.x = 0;
-                    child.physics.speed = mirrorVertical2D(mul2D(player.physics.speed, 0.7));
-                }
-            }
+            });
+
         }
-
-        //remove things
-        _.forEach(removeFromStage, function (childToRemove) {
-            stage.removeChild(childToRemove);
-        });
-        removeFromStage = [];
-
-        _.forEach(stage.children, function (child) {
-            //animate
-            if (child.animate) {
-                player.animate(frameTime);
-            }
-        });
 
         //update HUD
         _.forEach(hud, function (hudElemet) {
