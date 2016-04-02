@@ -146,6 +146,14 @@ function makePoint(x, y):QwopObject {
             if (other == player) {
                 score++;
                 removeFromStage.push(point);
+                _.pull(pointList,point); //remove from array
+                previousPointList.push(point);
+
+                if (previousPointList.length > 2) {
+                    var newPoint = previousPointList.shift();
+                    pointList.push(newPoint);
+                    addToStage.push(newPoint);
+                }
             }
         }
     };
@@ -249,10 +257,12 @@ function handleInput() {
 
     //TODO define proper states. Don't rely on startTimestamp to know if the game started
     if (overlayText) {
-        if (keyState.isDown('L1') ||
+        //end game overlay will stay up for at least 3 seconds
+        if ((Date.now() > startTimestamp + LEVEL_TIME + 3000) &&
+            (keyState.isDown('L1') ||
             keyState.isDown('L2') ||
             keyState.isDown('R1') ||
-            keyState.isDown('R2')) {
+            keyState.isDown('R2'))) {
 
             //start level
             removeFromStage.push(overlayText);
@@ -305,10 +315,13 @@ var player:QwopObject = makePlayer(SCREEN_WIDTH / 2, SCREEN_HEIGHT);
 
 stage.addChild(player);
 
-stage.addChild(makePoint(100, 100));
-stage.addChild(makePoint(100, SCREEN_HEIGHT - 100));
-stage.addChild(makePoint(SCREEN_WIDTH - 100, 100));
-stage.addChild(makePoint(SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100));
+var pointList:QwopObject[] = [makePoint(100, 100),makePoint(100, SCREEN_HEIGHT - 100),makePoint(SCREEN_WIDTH - 100, 100),makePoint(SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100)];
+var previousPointList:QwopHudObject[] = [];
+
+_.forEach(pointList,(point)=> {
+    stage.addChild(point);
+});
+
 
 //create HUD
 var scoreText = new PIXI.Text('Score: 9001 (just kidding)', {
@@ -354,6 +367,7 @@ var fps:number = 60;
 var frameTime:number = 1000 / fps;
 var physicsTime:number = 1 / fps;
 var removeFromStage = [];
+var addToStage = [];
 
 gameLoop();
 
@@ -413,6 +427,12 @@ function gameLoop() {
                 stage.removeChild(childToRemove);
             });
             removeFromStage = [];
+
+            //add things
+            _.forEach(addToStage, (childToAdd)=> {
+                stage.addChild(childToAdd);
+            });
+            addToStage = [];
 
             _.forEach(stage.children, function (child) {
                 //animate
