@@ -232,6 +232,15 @@ var ACTION_ROTATION = MAX_ANGLE / ROTATION_DECAY_FACTOR - MAX_ANGLE;
 function handleInput() {
     var throttle = 0.7;
 
+    if (startTimestamp < 0) {
+        if (keyState.isDown('L1') ||
+            keyState.isDown('L2') ||
+            keyState.isDown('R1') ||
+            keyState.isDown('R2')) {
+            startTimestamp = Date.now();
+        }
+    }
+
     if (keyState.isDown('R1')) {
         player.rotation -= ACTION_ROTATION;
     }
@@ -256,7 +265,7 @@ function handleInput() {
 //TODO get this executed after the fonts are loaded
 //gameplay
 var score:number = 0;
-var LEVEL_TIME:number = 30000; //ms
+var LEVEL_TIME:number = 25000; //ms
 var startTimestamp:number = -1;
 var keyState = new KeyState();
 
@@ -300,7 +309,7 @@ var qTimeText:QwopHudObject = timeText;
 qTimeText.updateHud = function () {
     if (startTimestamp > 0) {
         var now:number = Date.now();
-        timeText.text = "Time left: " + Math.max(0,LEVEL_TIME - now + startTimestamp);
+        timeText.text = "Time left: " + Math.max(0, LEVEL_TIME - now + startTimestamp);
     }
 };
 
@@ -312,12 +321,11 @@ _.forEach(hud, (hudElement)=> {
     stage.addChild(hudElement);
 });
 
-var fps = 60;
-var frameTime = 1000 / fps;
-var physicsTime = 1 / fps;
-var removeFromStage = []
+var fps: number = 60;
+var frameTime: number = 1000 / fps;
+var physicsTime: number = 1 / fps;
+var removeFromStage = [];
 
-startTimestamp = Date.now();
 gameLoop();
 
 function gameLoop() {
