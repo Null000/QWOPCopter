@@ -12,24 +12,24 @@ var COLLISION_TYPES = {
 };
 
 interface QwopObject extends PIXI.DisplayObject {
-    physics?:  {
-        mass: number,
-        appliedForce: number[],
-        gravity: boolean,
-        speed: number[]
+    physics?:{
+        mass:number,
+        appliedForce:number[],
+        gravity:boolean,
+        speed:number[]
     },
-    collision?: any,
-    animate?: (timeframe:number) => void
+    collision?:any,
+    animate?:(timeframe:number) => void
 }
 
 interface QwopHudObject extends PIXI.DisplayObject {
-    updateHud?: ()=> void
+    updateHud?:()=> void
 }
 
 //google fonts
 var WebFontConfig:any = {
     google: {
-        families: ['Snippet', 'Podkova:700']
+        families: ['Source Code Pro', 'Podkova:700']
     },
 
     active: function () {
@@ -133,7 +133,7 @@ function makePoint(x, y):QwopObject {
         stroke: "#FFFFFF",
         strokeThickness: 6
     });
-    var qPoint: QwopObject = point;
+    var qPoint:QwopObject = point;
 
     point.anchor.x = point.anchor.y = 0.5;
     point.x = x;
@@ -152,44 +152,6 @@ function makePoint(x, y):QwopObject {
 
     return point;
 }
-
-function makeKeyboardTrigger(keyCode) {
-    var key:any = {};
-    key.code = keyCode;
-    key.isDown = false;
-    key.isUp = true;
-    key.press = undefined;
-    key.release = undefined;
-    //The `downHandler`
-    key.downHandler = function (event) {
-        if (event.keyCode === key.code) {
-            if (key.isUp && key.press) key.press();
-            key.isDown = true;
-            key.isUp = false;
-        }
-        event.preventDefault();
-    };
-
-    //The `upHandler`
-    key.upHandler = function (event) {
-        if (event.keyCode === key.code) {
-            if (key.isDown && key.release) key.release();
-            key.isDown = false;
-            key.isUp = true;
-        }
-        event.preventDefault();
-    };
-
-    //Attach event listeners
-    window.addEventListener(
-        "keydown", key.downHandler.bind(key), false
-    );
-    window.addEventListener(
-        "keyup", key.upHandler.bind(key), false
-    );
-    return key;
-}
-
 
 function add2D(a:number[], b:number[]) {
     return [a[0] + b[0], a[1] + b[1]];
@@ -262,7 +224,7 @@ function doCollision(first, second) {
 }
 
 
-var MAX_ANGLE = PI/2; //90 degrees
+var MAX_ANGLE = PI / 2; //90 degrees
 var ROTATION_DECAY_FACTOR = 0.95;
 
 var ACTION_ROTATION = MAX_ANGLE / ROTATION_DECAY_FACTOR - MAX_ANGLE;
@@ -280,7 +242,7 @@ function handleInput() {
 
     if (keyState.isDown('L1')) {
         throttle = 2.4;
-    } else if(keyState.isDown('L2')) {
+    } else if (keyState.isDown('L2')) {
         throttle = 0;
     }
 
@@ -293,7 +255,9 @@ function handleInput() {
 
 //TODO get this executed after the fonts are loaded
 //gameplay
-var score = 0;
+var score:number = 0;
+var LEVEL_TIME:number = 30000; //ms
+var startTimestamp:number = -1;
 var keyState = new KeyState();
 
 //create world
@@ -317,25 +281,43 @@ stage.addChild(makePoint(SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100));
 
 //create HUD
 var scoreText = new PIXI.Text('Score: 9001 (just kidding)', {
-    font: "35px Snippet",
+    font: "35px Source Code Pro",
     fill: "white",
     align: "left"
 });
-var qScoreText: QwopHudObject = scoreText;
+var qScoreText:QwopHudObject = scoreText;
 qScoreText.updateHud = function () {
     scoreText.text = "Score: " + score;
 };
 scoreText.x = 20;
 scoreText.y = 20;
+var timeText = new PIXI.Text('Time left: ' + LEVEL_TIME, {
+    font: "35px Source Code Pro",
+    fill: "white",
+    align: "right"
+});
+var qTimeText:QwopHudObject = timeText;
+qTimeText.updateHud = function () {
+    if (startTimestamp > 0) {
+        var now:number = Date.now();
+        timeText.text = "Time left: " + Math.max(0,LEVEL_TIME - now + startTimestamp);
+    }
+};
 
-var hud:QwopHudObject[] = [scoreText];
-stage.addChild(scoreText);
+timeText.x = SCREEN_WIDTH - 20 - timeText.width;
+timeText.y = 20;
+
+var hud:QwopHudObject[] = [scoreText, timeText];
+_.forEach(hud, (hudElement)=> {
+    stage.addChild(hudElement);
+});
 
 var fps = 60;
 var frameTime = 1000 / fps;
 var physicsTime = 1 / fps;
-var removeFromStage = [];
+var removeFromStage = []
 
+startTimestamp = Date.now();
 gameLoop();
 
 function gameLoop() {
