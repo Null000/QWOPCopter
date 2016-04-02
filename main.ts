@@ -146,7 +146,7 @@ function makePoint(x, y):QwopObject {
             if (other == player) {
                 score++;
                 removeFromStage.push(point);
-                _.pull(pointList,point); //remove from array
+                _.pull(pointList, point); //remove from array
                 previousPointList.push(point);
 
                 if (previousPointList.length > 2) {
@@ -268,6 +268,15 @@ function handleInput() {
             removeFromStage.push(overlayText);
             overlayText = null;
             score = 0;
+            //reset points
+            _.forEach(previousPointList, (point)=> {
+                pointList.push(point);
+                stage.addChild(point);
+            });
+            previousPointList = [];
+            //reset player
+            player.x = SCREEN_WIDTH / 2;
+            player.y = SCREEN_HEIGHT;
             startTimestamp = Date.now();
         }
         return;
@@ -311,14 +320,15 @@ renderer.view.style.transform = 'translate3d( -50%, -50%, 0 )';
 
 document.body.appendChild(renderer.view);
 var stage = new PIXI.Container();
+
 var player:QwopObject = makePlayer(SCREEN_WIDTH / 2, SCREEN_HEIGHT);
 
 stage.addChild(player);
 
-var pointList:QwopObject[] = [makePoint(100, 100),makePoint(100, SCREEN_HEIGHT - 100),makePoint(SCREEN_WIDTH - 100, 100),makePoint(SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100)];
+var pointList:QwopObject[] = [makePoint(100, 100), makePoint(100, SCREEN_HEIGHT - 100), makePoint(SCREEN_WIDTH - 100, 100), makePoint(SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100)];
 var previousPointList:QwopHudObject[] = [];
 
-_.forEach(pointList,(point)=> {
+_.forEach(pointList, (point)=> {
     stage.addChild(point);
 });
 
