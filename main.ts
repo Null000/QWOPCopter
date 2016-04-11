@@ -266,7 +266,7 @@ function handleInput() {
             keyState.isDown('R2'))) {
 
             //start level
-            removeFromStage.push(overlayText);
+            metaContainer.removeChild(overlayText);
             overlayText = null;
             score = 0;
             //reset points
@@ -320,7 +320,9 @@ renderer.view.style.top = '50%';
 renderer.view.style.transform = 'translate3d( -50%, -50%, 0 )';
 
 document.body.appendChild(renderer.view);
+var metaContainer = new PIXI.Container();
 var stage = new PIXI.Container();
+metaContainer.addChild(stage);
 
 var player:QwopObject = makePlayer(SCREEN_WIDTH / 2, SCREEN_HEIGHT);
 
@@ -368,11 +370,11 @@ timeText.y = 20;
 
 var hud:QwopHudObject[] = [scoreText, timeText];
 _.forEach(hud, (hudElement)=> {
-    stage.addChild(hudElement);
+    metaContainer.addChild(hudElement);
 });
 
 var overlayText = makeOverlayText("QWOP, QWOP and awaaaaay!");
-stage.addChild(overlayText);
+metaContainer.addChild(overlayText);
 
 var fps:number = 60;
 var frameTime:number = 1000 / fps;
@@ -389,16 +391,16 @@ function draw() {
 
 }
 
-var lastFrameTime: number = Date.now()-1;
-var now: number;
-var timeDelta: number;
+var lastFrameTime:number = Date.now() - 1;
+var now:number;
+var timeDelta:number;
 
 gameLoop();
 function gameLoop() {
     setTimeout(function () {
         requestAnimationFrame(gameLoop);
         now = Date.now();
-        timeDelta = (now - lastFrameTime)/1000;
+        timeDelta = (now - lastFrameTime) / 1000;
         lastFrameTime = now;
         handleInput();
 
@@ -406,7 +408,7 @@ function gameLoop() {
         if (Date.now() > startTimestamp + LEVEL_TIME) {
             if (!overlayText) {
                 overlayText = makeOverlayText("You managed to QWOP " + score + " point" + (score == 1 ? "" : "s"));
-                stage.addChild(overlayText);
+                metaContainer.addChild(overlayText);
             }
         } else {
             //move
@@ -447,6 +449,15 @@ function gameLoop() {
                 }
             }
 
+            //viewport
+            var scale:number = Math.min(1, 15/size2D(player.physics.speed));
+
+            stage.scale.x = scale;
+            stage.scale.y = scale;
+
+            stage.x = SCREEN_WIDTH / 2 - player.x * scale;
+            stage.y = Math.max(0, (SCREEN_HEIGHT / 2)/scale - player.y)*scale;
+
             //remove things
             _.forEach(removeFromStage, function (childToRemove) {
                 stage.removeChild(childToRemove);
@@ -474,6 +485,6 @@ function gameLoop() {
         });
 
         //render everything
-        renderer.render(stage);
+        renderer.render(metaContainer);
     }, frameTime);
 }
