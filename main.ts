@@ -340,6 +340,19 @@ ground.x = SCREEN_WIDTH / 2;
 ground.y = SCREEN_HEIGHT - 40;
 stage.addChild(ground);
 
+var underground = new PIXI.Text("UNDERGROUNDUNDERGROUND", {
+    font: "bold 150px Podkova",
+    fill: "#331a00",
+    align: "center",
+    stroke: "#000000",
+    strokeThickness: 6
+});
+underground.anchor.x = 0.5;
+underground.anchor.y = 0;
+underground.x = SCREEN_WIDTH / 2;
+underground.y = ground.y + 90;
+stage.addChild(underground);
+
 
 var pointList:QwopObject[] = [
     makePoint(100, 100),
@@ -448,14 +461,6 @@ function gameLoop() {
                     if (child.y > SCREEN_HEIGHT) {
                         child.y = SCREEN_HEIGHT;
                         child.physics.speed = mirrorHorizontal2D(mul2D(player.physics.speed, 0.7));
-                    }
-                    if (child.x > SCREEN_WIDTH) {
-                        child.x = SCREEN_WIDTH;
-                        child.physics.speed = mirrorVertical2D(mul2D(player.physics.speed, 0.7));
-                    }
-                    if (child.x < 0) {
-                        child.x = 0;
-                        child.physics.speed = mirrorVertical2D(mul2D(player.physics.speed, 0.7));
                     }
                 }
             }
