@@ -336,8 +336,8 @@ var ground = new PIXI.Text("GROUNDGROUNDGROUND", {
 });
 ground.anchor.x = 0.5;
 ground.anchor.y = 0;
-ground.x = SCREEN_WIDTH/2;
-ground.y = SCREEN_HEIGHT;
+ground.x = SCREEN_WIDTH / 2;
+ground.y = SCREEN_HEIGHT - 40;
 stage.addChild(ground);
 
 
@@ -403,6 +403,9 @@ var lastFrameTime:number = Date.now() - 1;
 var now:number;
 var timeDelta:number;
 
+var previousScale:number = 1;
+var maxScaleChangeSpeed:number = 0.2;
+
 gameLoop();
 function gameLoop() {
     setTimeout(function () {
@@ -458,13 +461,20 @@ function gameLoop() {
             }
 
             //viewport
-            var scale:number = Math.min(1, 15/size2D(player.physics.speed));
+            var scale:number = Math.min(1, 15 / size2D(player.physics.speed));
+            if (scale > previousScale) {
+                scale = Math.min(scale, previousScale + maxScaleChangeSpeed*timeDelta);
+            } else {
+                scale = Math.max(scale, previousScale - maxScaleChangeSpeed*timeDelta);
+            }
 
             stage.scale.x = scale;
             stage.scale.y = scale;
 
             stage.x = SCREEN_WIDTH / 2 - player.x * scale;
-            stage.y = Math.max(-50, (SCREEN_HEIGHT / 2)/scale - player.y)*scale;
+            stage.y = Math.max(-50, (SCREEN_HEIGHT / 2) / scale - player.y) * scale;
+
+            previousScale = scale;
 
             //remove things
             _.forEach(removeFromStage, function (childToRemove) {
