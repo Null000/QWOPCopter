@@ -1,8 +1,0 @@
-{
-  "dependencies": {
-    "lodash": "registry:npm/lodash#4.0.0+20160305082308"
-  },
-  "ambientDependencies": {
-    "pixi.js": "registry:dt/pixi.js#3.0.9+20160317120654"
-  }
-}
