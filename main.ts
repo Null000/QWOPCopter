@@ -113,8 +113,6 @@ function makePlayer(x:number, y:number):QwopObject {
         var speed:number = timeDelta * 15;
         leftRotor.rotation += speed;
         rightRotor.rotation -= speed;
-
-        renderer.render(player);
     };
 
     //collision attributes
@@ -328,7 +326,12 @@ var player:QwopObject = makePlayer(SCREEN_WIDTH / 2, SCREEN_HEIGHT);
 
 stage.addChild(player);
 
-var pointList:QwopObject[] = [makePoint(100, 100), makePoint(100, SCREEN_HEIGHT - 100), makePoint(SCREEN_WIDTH - 100, 100), makePoint(SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100)];
+var pointList:QwopObject[] = [
+    makePoint(100, 100),
+    makePoint(100, SCREEN_HEIGHT - 100),
+    makePoint(SCREEN_WIDTH - 100, 100),
+    makePoint(SCREEN_WIDTH - 100, SCREEN_HEIGHT - 100)];
+
 var previousPointList:QwopHudObject[] = [];
 
 _.forEach(pointList, (point)=> {
