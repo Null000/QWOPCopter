@@ -320,11 +320,26 @@ renderer.view.style.transform = 'translate3d( -50%, -50%, 0 )';
 document.body.appendChild(renderer.view);
 var metaContainer = new PIXI.Container();
 var stage = new PIXI.Container();
+stage.y = -50;
 metaContainer.addChild(stage);
 
 var player:QwopObject = makePlayer(SCREEN_WIDTH / 2, SCREEN_HEIGHT);
 
 stage.addChild(player);
+
+var ground = new PIXI.Text("GROUNDGROUNDGROUND", {
+    font: "bold 150px Podkova",
+    fill: "#4d2600",
+    align: "center",
+    stroke: "#000000",
+    strokeThickness: 6
+});
+ground.anchor.x = 0.5;
+ground.anchor.y = 0;
+ground.x = SCREEN_WIDTH/2;
+ground.y = SCREEN_HEIGHT;
+stage.addChild(ground);
+
 
 var pointList:QwopObject[] = [
     makePoint(100, 100),
@@ -449,7 +464,7 @@ function gameLoop() {
             stage.scale.y = scale;
 
             stage.x = SCREEN_WIDTH / 2 - player.x * scale;
-            stage.y = Math.max(0, (SCREEN_HEIGHT / 2)/scale - player.y)*scale;
+            stage.y = Math.max(-50, (SCREEN_HEIGHT / 2)/scale - player.y)*scale;
 
             //remove things
             _.forEach(removeFromStage, function (childToRemove) {
