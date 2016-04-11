@@ -21,7 +21,8 @@ Use QWOP to fly (or ',RL for fellow Dvorak users)
 - detect end of game and offer restart
 - mooooooore objectives
 - graphics... anybody willing to give me any to use?
-
+- recheck frame limiting code (everything seems slower on a different machine)
+- add appcache manifest so you can play it offline
 
 ## DEVELOPMENT
 1. npm install typescript -g

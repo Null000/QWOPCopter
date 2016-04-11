@@ -108,10 +108,11 @@ function makePlayer(x:number, y:number):QwopObject {
     };
 
     //gives custom animation/render
-    qPlayer.animate = function (frameTime) {
+    qPlayer.animate = function (timeDelta) {
         //animate
-        leftRotor.rotation += 0.2;
-        rightRotor.rotation -= 0.2;
+        var speed:number = timeDelta * 15;
+        leftRotor.rotation += speed;
+        rightRotor.rotation -= speed;
 
         renderer.render(player);
     };
@@ -375,16 +376,30 @@ stage.addChild(overlayText);
 
 var fps:number = 60;
 var frameTime:number = 1000 / fps;
-var physicsTime:number = 1 / fps;
 var removeFromStage = [];
 var addToStage = [];
 
-gameLoop();
+var time;
+function draw() {
+    requestAnimationFrame(draw);
+    var now = new Date().getTime(),
+        dt = now - (time || now);
 
+    time = now;
+
+}
+
+var lastFrameTime: number = Date.now()-1;
+var now: number;
+var timeDelta: number;
+
+gameLoop();
 function gameLoop() {
     setTimeout(function () {
         requestAnimationFrame(gameLoop);
-
+        now = Date.now();
+        timeDelta = (now - lastFrameTime)/1000;
+        lastFrameTime = now;
         handleInput();
 
         //level ends detection
@@ -398,7 +413,7 @@ function gameLoop() {
             _.forEach(stage.children, function (child) {
                 child = <QwopObject> child;
                 if (child.physics) {
-                    doPhysics(child, physicsTime);
+                    doPhysics(child, timeDelta);
                 }
             });
 
@@ -447,7 +462,7 @@ function gameLoop() {
             _.forEach(stage.children, function (child) {
                 //animate
                 if (child.animate) {
-                    player.animate(frameTime);
+                    player.animate(timeDelta);
                 }
             });
 

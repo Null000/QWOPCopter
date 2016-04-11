@@ -80,10 +80,11 @@ function makePlayer(x, y) {
         speed: [0, 0]
     };
     //gives custom animation/render
-    qPlayer.animate = function (frameTime) {
+    qPlayer.animate = function (timeDelta) {
         //animate
-        leftRotor.rotation += 0.2;
-        rightRotor.rotation -= 0.2;
+        var speed = timeDelta * 15;
+        leftRotor.rotation += speed;
+        rightRotor.rotation -= speed;
         renderer.render(player);
     };
     //collision attributes
@@ -295,13 +296,24 @@ var overlayText = makeOverlayText("QWOP, QWOP and awaaaaay!");
 stage.addChild(overlayText);
 var fps = 60;
 var frameTime = 1000 / fps;
-var physicsTime = 1 / fps;
 var removeFromStage = [];
 var addToStage = [];
+var time;
+function draw() {
+    requestAnimationFrame(draw);
+    var now = new Date().getTime(), dt = now - (time || now);
+    time = now;
+}
+var lastFrameTime = Date.now() - 1;
+var now;
+var timeDelta;
 gameLoop();
 function gameLoop() {
     setTimeout(function () {
         requestAnimationFrame(gameLoop);
+        now = Date.now();
+        timeDelta = (now - lastFrameTime) / 1000;
+        lastFrameTime = now;
         handleInput();
         //level ends detection
         if (Date.now() > startTimestamp + LEVEL_TIME) {
@@ -315,7 +327,7 @@ function gameLoop() {
             _.forEach(stage.children, function (child) {
                 child = child;
                 if (child.physics) {
-                    doPhysics(child, physicsTime);
+                    doPhysics(child, timeDelta);
                 }
             });
             //collision resolution
@@ -359,7 +371,7 @@ function gameLoop() {
             _.forEach(stage.children, function (child) {
                 //animate
                 if (child.animate) {
-                    player.animate(frameTime);
+                    player.animate(timeDelta);
                 }
             });
         }
@@ -371,4 +383,3 @@ function gameLoop() {
         renderer.render(stage);
     }, frameTime);
 }
-//# sourceMappingURL=main.js.map
