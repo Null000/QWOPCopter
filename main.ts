@@ -384,16 +384,6 @@ var frameTime:number = 1000 / fps;
 var removeFromStage = [];
 var addToStage = [];
 
-var time;
-function draw() {
-    requestAnimationFrame(draw);
-    var now = new Date().getTime(),
-        dt = now - (time || now);
-
-    time = now;
-
-}
-
 var lastFrameTime:number = Date.now() - 1;
 var now:number;
 var timeDelta:number;
@@ -483,8 +473,8 @@ function gameLoop() {
         }
 
         //update HUD
-        _.forEach(hud, function (hudElemet) {
-            hudElemet.updateHud();
+        _.forEach(hud, function (hudElement) {
+            hudElement.updateHud();
         });
 
         //render everything
