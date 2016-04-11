@@ -160,6 +160,27 @@ function makePoint(x, y):QwopObject {
     return point;
 }
 
+function makeTree(x:number, y:number) {
+    var tree = new PIXI.Container();
+    var trunk = new PIXI.Text("TREETREE", {
+        font: "bold 100px Podkova",
+        fill: "#994f00",
+        align: "center",
+        stroke: "#000000",
+        strokeThickness: 6
+    });
+    trunk.anchor.x = 0;
+    trunk.anchor.y = 0.5;
+    trunk.rotation = -PI/2;
+
+    tree.addChild(trunk);
+
+    tree.x = x;
+    tree.y = y;
+
+    return tree;
+}
+
 function makeOverlayText(text:string) {
     var overlayText = new PIXI.Text(text, {
         font: "35px Source Code Pro",
@@ -352,6 +373,8 @@ underground.anchor.y = 0;
 underground.x = SCREEN_WIDTH / 2;
 underground.y = ground.y + 90;
 stage.addChild(underground);
+
+stage.addChild(makeTree(SCREEN_WIDTH/2,SCREEN_HEIGHT));
 
 
 var pointList:QwopObject[] = [
