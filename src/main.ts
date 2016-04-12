@@ -171,9 +171,37 @@ function makeTree(x:number, y:number) {
     });
     trunk.anchor.x = 0;
     trunk.anchor.y = 0.5;
-    trunk.rotation = -PI/2;
+    trunk.rotation = -PI / 2;
 
     tree.addChild(trunk);
+
+    var leafText = ["TREE",
+        "TREETREETREE",
+        "TREETREETREETREETREE",
+        "TREETREETREETREETREE",
+        "TREETREETREETREETREETREE",
+        "TREETREETREETREETREE",
+        "TREETREETREETREE",
+        "TREETREETREE"];
+
+    leafText.reverse();
+
+    for (var i = 0; i < leafText.length; i++) {
+        var leaf = new PIXI.Text(leafText[i], {
+            font: "bold 70px Podkova",
+            fill: "#008000",
+            align: "center",
+            stroke: "#000000",
+            strokeThickness: 6,
+            lineHeight: 0
+        });
+
+        leaf.anchor.x = 0.5;
+        leaf.anchor.y = 1;
+        leaf.x = 0;
+        leaf.y = -trunk.width + 10 - i * 65;
+        tree.addChild(leaf);
+    }
 
     tree.x = x;
     tree.y = y;
@@ -346,13 +374,11 @@ metaContainer.addChild(stage);
 
 var player:QwopObject = makePlayer(SCREEN_WIDTH / 2, SCREEN_HEIGHT);
 
-stage.addChild(player);
-
 var ground = new PIXI.Text("GROUNDGROUNDGROUND", {
     font: "bold 150px Podkova",
-    fill: "#4d2600",
+    fill: "#004d00",
     align: "center",
-    stroke: "#000000",
+    stroke: "white",
     strokeThickness: 6
 });
 ground.anchor.x = 0.5;
@@ -365,16 +391,16 @@ var underground = new PIXI.Text("UNDERGROUNDUNDERGROUND", {
     font: "bold 150px Podkova",
     fill: "#331a00",
     align: "center",
-    stroke: "#000000",
+    stroke: "white",
     strokeThickness: 6
 });
 underground.anchor.x = 0.5;
 underground.anchor.y = 0;
 underground.x = SCREEN_WIDTH / 2;
-underground.y = ground.y + 90;
+underground.y = ground.y + 100;
 stage.addChild(underground);
 
-stage.addChild(makeTree(SCREEN_WIDTH/2,SCREEN_HEIGHT));
+stage.addChild(makeTree(20, SCREEN_HEIGHT));
 
 
 var pointList:QwopObject[] = [
@@ -389,6 +415,8 @@ _.forEach(pointList, (point)=> {
     stage.addChild(point);
 });
 
+
+stage.addChild(player);
 
 //create HUD
 var scoreText = new PIXI.Text('Score: 9001 (just kidding)', {
@@ -454,7 +482,9 @@ function gameLoop() {
         //level ends detection
         if (Date.now() > startTimestamp + LEVEL_TIME) {
             if (!overlayText) {
-                overlayText = makeOverlayText("You managed to QWOP " + score + " point" + (score == 1 ? "" : "s"));
+                var highscore = Math.max(parseInt(localStorage.getItem("highscore"), 10) || 0, score);
+                localStorage.setItem("highscore", highscore.toString());
+                overlayText = makeOverlayText("You managed to QWOP " + score + " point" + (score == 1 ? "" : "s") + ".\nBest so far is " + highscore);
                 metaContainer.addChild(overlayText);
             }
         } else {
@@ -491,9 +521,9 @@ function gameLoop() {
             //viewport
             var scale:number = Math.min(1, 15 / size2D(player.physics.speed));
             if (scale > previousScale) {
-                scale = Math.min(scale, previousScale + maxScaleChangeSpeed*timeDelta);
+                scale = Math.min(scale, previousScale + maxScaleChangeSpeed * timeDelta);
             } else {
-                scale = Math.max(scale, previousScale - maxScaleChangeSpeed*timeDelta);
+                scale = Math.max(scale, previousScale - maxScaleChangeSpeed * timeDelta);
             }
 
             stage.scale.x = scale;
