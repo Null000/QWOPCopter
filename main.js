@@ -146,24 +146,46 @@ function makeTree(x, y) {
         "TREETREETREETREE",
         "TREETREETREE"];
     leafText.reverse();
-    for (var i = 0; i < leafText.length; i++) {
-        var leaf = new PIXI.Text(leafText[i], {
-            font: "bold 70px Podkova",
-            fill: "#008000",
-            align: "center",
-            stroke: "#000000",
-            strokeThickness: 6,
-            lineHeight: 0
-        });
-        leaf.anchor.x = 0.5;
-        leaf.anchor.y = 1;
-        leaf.x = 0;
-        leaf.y = -trunk.width + 10 - i * 65;
-        tree.addChild(leaf);
-    }
+    textToObjects(tree, leafText, {
+        font: "bold 70px Podkova",
+        fill: "#008000",
+        align: "center",
+        stroke: "#000000",
+        strokeThickness: 6
+    }, 0, -trunk.width + 10, -65);
     tree.x = x;
     tree.y = y;
     return tree;
+}
+function makeBush(x, y) {
+    var bush = new PIXI.Container();
+    var leafText = ["BUSH",
+        "BUSHBUSH",
+        "BUSHUBSHBUSH",
+        "BUSHBUSHBUSH",
+        "BUSHBUSHBUSH",
+        "BUSHBUSH"];
+    leafText.reverse();
+    textToObjects(bush, leafText, {
+        font: "bold 30px Podkova",
+        fill: "#008000",
+        align: "center",
+        stroke: "#000000",
+        strokeThickness: 6
+    }, 0, 0, -28);
+    bush.x = x;
+    bush.y = y;
+    return bush;
+}
+function textToObjects(container, text, style, x, y, yDelta) {
+    for (var i = 0; i < text.length; i++) {
+        var line = new PIXI.Text(text[i], style);
+        line.anchor.x = 0.5;
+        line.anchor.y = 1;
+        line.x = 0;
+        line.y = y + i * yDelta;
+        container.addChild(line);
+    }
 }
 function makeOverlayText(text) {
     var overlayText = new PIXI.Text(text, {
@@ -320,6 +342,7 @@ underground.x = SCREEN_WIDTH / 2;
 underground.y = ground.y + 100;
 stage.addChild(underground);
 stage.addChild(makeTree(20, SCREEN_HEIGHT));
+stage.addChild(makeBush(800, SCREEN_HEIGHT));
 var pointList = [
     makePoint(100, 100),
     makePoint(100, SCREEN_HEIGHT - 100),
@@ -388,7 +411,7 @@ function gameLoop() {
             if (!overlayText) {
                 var highscore = Math.max(parseInt(localStorage.getItem("highscore"), 10) || 0, score);
                 localStorage.setItem("highscore", highscore.toString());
-                overlayText = makeOverlayText("You managed to QWOP " + score + " point" + (score == 1 ? "" : "s") + ".\nBest so far is " + highscore);
+                overlayText = makeOverlayText("You managed to QWOP " + score + " point" + (score == 1 ? "" : "s") + ".\nThe QWOPest so far is " + highscore);
                 metaContainer.addChild(overlayText);
             }
         }
