@@ -186,27 +186,55 @@ function makeTree(x:number, y:number) {
 
     leafText.reverse();
 
-    for (var i = 0; i < leafText.length; i++) {
-        var leaf = new PIXI.Text(leafText[i], {
-            font: "bold 70px Podkova",
-            fill: "#008000",
-            align: "center",
-            stroke: "#000000",
-            strokeThickness: 6,
-            lineHeight: 0
-        });
-
-        leaf.anchor.x = 0.5;
-        leaf.anchor.y = 1;
-        leaf.x = 0;
-        leaf.y = -trunk.width + 10 - i * 65;
-        tree.addChild(leaf);
-    }
+    textToObjects(tree, leafText, {
+        font: "bold 70px Podkova",
+        fill: "#008000",
+        align: "center",
+        stroke: "#000000",
+        strokeThickness: 6
+    }, 0, -trunk.width + 10, -65);
 
     tree.x = x;
     tree.y = y;
 
     return tree;
+}
+
+function makeBush(x:number, y:number) {
+    var bush = new PIXI.Container();
+
+    var leafText = ["BUSH",
+        "BUSHBUSH",
+        "BUSHUBSHBUSH",
+        "BUSHBUSHBUSH",
+        "BUSHBUSHBUSH",
+        "BUSHBUSH"];
+
+    leafText.reverse();
+
+    textToObjects(bush, leafText, {
+        font: "bold 30px Podkova",
+        fill: "#008000",
+        align: "center",
+        stroke: "#000000",
+        strokeThickness: 6
+    }, 0, 0, -28);
+
+
+    bush.x = x;
+    bush.y =y;
+    return bush;
+}
+
+function textToObjects(container: PIXI.Container, text:string[],style:any,x:number,y:number,yDelta:number) {
+    for (var i = 0; i < text.length; i++) {
+        var line = new PIXI.Text(text[i], style);
+        line.anchor.x = 0.5;
+        line.anchor.y = 1;
+        line.x = 0;
+        line.y = y + i * yDelta;
+        container.addChild(line);
+    }
 }
 
 function makeOverlayText(text:string) {
@@ -401,6 +429,7 @@ underground.y = ground.y + 100;
 stage.addChild(underground);
 
 stage.addChild(makeTree(20, SCREEN_HEIGHT));
+stage.addChild(makeBush(800, SCREEN_HEIGHT));
 
 
 var pointList:QwopObject[] = [
