@@ -484,7 +484,7 @@ function gameLoop() {
             if (!overlayText) {
                 var highscore = Math.max(parseInt(localStorage.getItem("highscore"), 10) || 0, score);
                 localStorage.setItem("highscore", highscore.toString());
-                overlayText = makeOverlayText("You managed to QWOP " + score + " point" + (score == 1 ? "" : "s") + ".\nBest so far is " + highscore);
+                overlayText = makeOverlayText("You managed to QWOP " + score + " point" + (score == 1 ? "" : "s") + ".\nThe QWOPest so far is " + highscore);
                 metaContainer.addChild(overlayText);
             }
         } else {
